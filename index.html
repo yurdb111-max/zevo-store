@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZEVO Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0b0b0f;
+            --text-color: #f1f1f1;
+            --card-bg: #141419;
+            --header-bg: #121217;
+            --border-color: #262630;
+            --accent-color: #d4af37;
+            --shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        [data-theme="light"] {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --header-bg: #ffffff;
+            --border-color: #dee2e6;
+            --accent-color: #111111;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding-bottom: 50px; }
+        header { background-color: var(--header-bg); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+        .logo { font-size: 22px; font-weight: bold; cursor: pointer; user-select: none; color: var(--accent-color); }
+        .header-icons { display: flex; gap: 15px; align-items: center; }
+        .icon-btn { background: none; border: none; color: var(--text-color); font-size: 20px; cursor: pointer; position: relative; }
+        .cart-count { position: absolute; top: -8px; right: -8px; background: #ff4757; color: white; font-size: 11px; padding: 2px 6px; border-radius: 50%; }
+        .search-container { padding: 15px 20px 5px; }
+        .search-box { position: relative; width: 100%; }
+        .search-box input { width: 100%; padding: 12px 15px 12px 45px; border-radius: 25px; border: 1px solid var(--border-color); background-color: var(--card-bg); color: var(--text-color); font-size: 14px; }
+        .search-box i { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #888; }
+        .store-header-info { padding: 10px 20px; font-size: 14px; color: #888; }
+        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 10px 15px; }
+        @media (min-width: 768px) { .products-grid { grid-template-columns: repeat(4, 1fr); } }
+        .product-card { background-color: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; border: 1px solid var(--border-color); }
+        .product-img-container { width: 100%; height: 190px; position: relative; background-color: #1a1a22; display: flex; overflow: hidden; }
+        .product-img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .product-img-container img.dual { width: 50%; border-left: 1px solid var(--border-color); }
+        .badge-offer { position: absolute; top: 10px; right: 10px; background: #ff4757; color: white; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: bold; z-index: 2; }
+        .product-info { padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+        .product-name { font-size: 14px; font-weight: 600; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .price-box { display: flex; align-items: center; gap: 8px; }
+        .product-price { font-weight: bold; font-size: 15px; color: #ff4757; }
+        .old-price { font-size: 12px; color: #888; text-decoration: line-through; }
+        .selectors-box { display: flex; gap: 5px; margin: 4px 0; }
+        .selectors-box select { flex: 1; padding: 5px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 11px; }
+        .card-footer-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
+        .product-qty { font-size: 11px; color: #888; }
+        .quick-add-btn { background-color: #ff4757; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; padding: 15px; }
+        .modal-content { background-color: var(--card-bg); width: 100%; max-width: 420px; border-radius: 16px; padding: 20px; max-height: 85vh; overflow-y: auto; position: relative; border: 1px solid var(--border-color); }
+        .close-modal { position: absolute; top: 15px; left: 15px; font-size: 20px; background: none; border: none; color: var(--text-color); cursor: pointer; }
+        .cart-item-card { display: flex; align-items: center; background: var(--bg-color); padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); gap: 10px; margin-bottom: 10px; }
+        .cart-item-img { width: 55px; height: 55px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+        .cart-item-details { flex-grow: 1; display: flex; flex-direction: column; gap: 3px; }
+        .cart-qty-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+        .cart-qty-controls { display: flex; align-items: center; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; }
+        .cart-qty-controls button { background: none; border: none; color: var(--text-color); cursor: pointer; padding: 2px 8px; font-size: 13px; font-weight: bold; }
+        .whatsapp-checkout-btn { width: 100%; background-color: #25d366; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; }
+        .admin-login-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); margin: 15px 0; }
+        #custom-toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); padding: 12px 24px; border-radius: 30px; box-shadow: var(--shadow); z-index: 3000; font-size: 14px; transition: transform 0.3s ease; }
+        #custom-toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <header>
+        <div class="logo" ondblclick="openAdminModal()">ZEVO</div>
+        <div class="header-icons">
+            <button class="icon-btn" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="theme-icon"></i></button>
+            <button class="icon-btn" onclick="openCartModal()"><i class="fa-solid fa-bag-shopping"></i><span class="cart-count" id="cart-count">0</span></button>
+        </div>
+    </header>
+
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="ابحث عن تيشيرت..." oninput="renderProducts()">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+    </div>
+
+    <div class="store-header-info"><span id="products-count-text">المنتجات المتاحة</span></div>
+
+    <main class="products-grid" id="products-grid"></main>
+
+    <!-- نافذة دخول الأدمن -->
+    <div class="modal" id="admin-login-modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('admin-login-modal')">&times;</button>
+            <h3 style="margin-bottom: 10px;">لوحة تحكم الأدمن</h3>
+            <p style="font-size: 13px; color: #888;">الرجاء إدخال كلمة المرور للمتابعة</p>
+            <input type="password" id="admin-pass-input" class="admin-login-input" placeholder="كلمة المرور...">
+            <button class="whatsapp-checkout-btn" style="background: var(--accent-color); color: #000;" onclick="verifyAdminPass()">دخول لوحة التحكم</button>
+        </div>
+    </div>
+
+    <!-- نافذة السلة -->
+    <div class="modal" id="cart-modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('cart-modal')">&times;</button>
+            <h3 style="margin-bottom: 15px; text-align: center;">سلة المشتريات</h3>
+            <div id="cart-items-container" style="max-height: 40vh; overflow-y: auto;"></div>
+            <div style="border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between; font-weight: bold;">
+                <span>الإجمالي الكلي:</span>
+                <span id="cart-total-price">EGP 0</span>
+            </div>
+            <button class="whatsapp-checkout-btn" onclick="checkoutWhatsApp()">
+                <i class="fa-brands fa-whatsapp" style="font-size: 18px;"></i> اطلب عبر واتساب
+            </button>
+        </div>
+    </div>
+
+    <div id="custom-toast">تمت العملية بنجاح</div>
+
+    <script>
+        let products = JSON.parse(localStorage.getItem('zevo_products')) || [];
+        let cart = JSON.parse(localStorage.getItem('zevo_cart')) || [];
+
+        function showToast(msg) {
+            const toast = document.getElementById('custom-toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2500);
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.className = 'fa-solid fa-sun';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fa-solid fa-moon';
+            }
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = '';
+            
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(query));
+            document.getElementById('products-count-text').innerText = `${filtered.length} تيشيرت متاحة`;
+
+            filtered.forEach(product => {
+                let defaultImg = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500';
+                let img1 = product.image1 || defaultImg;
+                let img2 = product.image2 || '';
+
+                let imgHtml = `<img src="${img1}" alt="${product.name}">`;
+                if(img2) {
+                    imgHtml = `<img src="${img1}" class="dual" alt="${product.name}"><img src="${img2}" class="dual" alt="${product.name}">`;
+                }
+
+                let offerBadge = product.isOffer ? `<div class="badge-offer">عرض ${product.discount}%</div>` : '';
+                let oldPriceHtml = product.oldPrice ? `<span class="old-price">EGP ${product.oldPrice}</span>` : '';
+
+                let colors = product.colors ? product.colors.split(',') : ['أسود'];
+                let sizes = product.sizes ? product.sizes.split(',') : ['M', 'L', 'XL'];
+                let colorOptions = colors.map(c => `<option value="${c.trim()}">${c.trim()}</option>`).join('');
+                let sizeOptions = sizes.map(s => `<option value="${s.trim()}">${s.trim()}</option>`).join('');
+
+                grid.innerHTML += `
+                    <div class="product-card">
+                        <div class="product-img-container">${offerBadge}${imgHtml}</div>
+                        <div class="product-info">
+                            <div class="product-name">${product.name}</div>
+                            <div class="price-box">
+                                <span class="product-price">EGP ${product.price}</span>
+                                ${oldPriceHtml}
+                            </div>
+                            <div class="selectors-box">
+                                <select id="size-${product.id}">${sizeOptions}</select>
+                                <select id="color-${product.id}">${colorOptions}</select>
+                            </div>
+                            <div class="card-footer-row">
+                                <div class="product-qty">المتبقي: <span id="qty-disp-${product.id}">${product.qty}</span></div>
+                                <button class="quick-add-btn" onclick="addToCart(${product.id})">إضافة</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            updateCartCount();
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            if(product.qty <= 0) {
+                showToast('عذراً، نفدت الكمية!');
+                return;
+            }
+
+            const selectedSize = document.getElementById(`size-${id}`).value;
+            const selectedColor = document.getElementById(`color-${id}`).value;
+
+            product.qty -= 1;
+            localStorage.setItem('zevo_products', JSON.stringify(products));
+
+            const existing = cart.find(item => item.id === id && item.size === selectedSize && item.color === selectedColor);
+            if(existing) {
+                existing.cartQty += 1;
+            } else {
+                cart.push({ ...product, cartQty: 1, size: selectedSize, color: selectedColor });
+            }
+            localStorage.setItem('zevo_cart', JSON.stringify(cart));
+            renderProducts();
+            showToast('تمت الإضافة إلى السلة بنجاح!');
+        }
+
+        function updateCartCount() {
+            const totalCount = cart.reduce((sum, item) => sum + item.cartQty, 0);
+            document.getElementById('cart-count').innerText = totalCount;
+        }
+
+        function openCartModal() {
+            const container = document.getElementById('cart-items-container');
+            container.innerHTML = '';
+            let total = 0;
+
+            if(cart.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#888; padding:20px;">السلة فارغة حالياً.</p>';
+            } else {
+                cart.forEach((item, index) => {
+                    total += Number(item.price) * item.cartQty;
+                    container.innerHTML += `
+                        <div class="cart-item-card">
+                            <img src="${item.image1 || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500'}" class="cart-item-img">
+                            <div class="cart-item-details">
+                                <div style="font-size:13px; font-weight:600;">${item.name}</div>
+                                <div style="font-size:11px; color:#888;">المقاس: ${item.size} | اللون: ${item.color}</div>
+                                <div class="cart-qty-row">
+                                    <span style="font-size:12px; color:#ff4757; font-weight:bold;">EGP ${item.price}</span>
+                                    <div class="cart-qty-controls">
+                                        <button onclick="changeCartQty(${index}, -1)">-</button>
+                                        <span style="font-size:12px; font-weight:bold; min-width:15px; text-align:center;">${item.cartQty}</span>
+                                        <button onclick="changeCartQty(${index}, 1)">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="removeFromCart(${index})" style="background:none; border:none; color:#ff4757; cursor:pointer; font-size:13px; padding:5px;"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('cart-total-price').innerText = `EGP ${total}`;
+            document.getElementById('cart-modal').style.display = 'flex';
+        }
+
+        function changeCartQty(index, delta) {
+            const cartItem = cart[index];
+            const product = products.find(p => p.id === cartItem.id);
+
+            if (delta === 1) {
+                if (product && product.qty > 0) {
+                    product.qty -= 1;
+                    cartItem.cartQty += 1;
+                } else {
+                    showToast('عذراً، نفدت الكمية بالمخزن!');
+                    return;
+                }
+            } else if (delta === -1) {
+                if (cartItem.cartQty > 1) {
+                    cartItem.cartQty -= 1;
+                    if (product) product.qty += 1;
+                } else {
+                    removeFromCart(index);
+                    return;
+                }
+            }
+
+            localStorage.setItem('zevo_products', JSON.stringify(products));
+            localStorage.setItem('zevo_cart', JSON.stringify(cart));
+            openCartModal();
+            renderProducts();
+        }
+
+        function removeFromCart(index) {
+            const cartItem = cart[index];
+            const product = products.find(p => p.id === cartItem.id);
+            if(product) {
+                product.qty += cartItem.cartQty;
+                localStorage.setItem('zevo_products', JSON.stringify(products));
+            }
+            cart.splice(index, 1);
+            localStorage.setItem('zevo_cart', JSON.stringify(cart));
+            openCartModal();
+            renderProducts();
+        }
+
+        function checkoutWhatsApp() {
+            if(cart.length === 0) {
+                showToast('السلة فارغة!');
+                return;
+            }
+            let message = "مرحباً، أريد طلب المنتجات التالية من ZEVO Store:\n\n";
+            let total = 0;
+            cart.forEach((item, i) => {
+                message += `${i+1}. ${item.name} (المقاس: ${item.size} - اللون: ${item.color}) - العدد: ${item.cartQty} - ${item.price * item.cartQty} EGP\n`;
+                total += Number(item.price) * item.cartQty;
+            });
+            message += `\nالإجمالي الكلي: EGP ${total}`;
+            window.open(`https://wa.me/201036462080?text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        function openAdminModal() { document.getElementById('admin-login-modal').style.display = 'flex'; }
+        function verifyAdminPass() {
+            const currentPass = localStorage.getItem('zevo_admin_pass') || 'zevo 123#$&_+@';
+            if(document.getElementById('admin-pass-input').value === currentPass) {
+                window.location.href = "admin.html";
+            } else {
+                showToast('كلمة المرور غير صحيحة!');
+            }
+        }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        renderProducts();
+    </script>
+</body>
+</html>

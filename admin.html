@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZEVO - لوحة التحكم</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0b0b0f;
+            --text-color: #f1f1f1;
+            --card-bg: #141419;
+            --header-bg: #121217;
+            --border-color: #262630;
+            --accent-color: #d4af37;
+            --shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        [data-theme="light"] {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --header-bg: #ffffff;
+            --border-color: #dee2e6;
+            --accent-color: #111111;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding-bottom: 50px; }
+        header { background-color: var(--header-bg); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+        .logo { font-size: 20px; font-weight: bold; color: var(--accent-color); }
+        .back-store { background: none; border: 1px solid var(--border-color); color: var(--text-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        h3 { margin-bottom: 15px; font-size: 18px; color: var(--accent-color); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; margin-bottom: 5px; color: #aaa; }
+        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 14px; }
+        input[type="file"] { padding: 8px; cursor: pointer; }
+        .row { display: flex; gap: 10px; }
+        .row .form-group { flex: 1; }
+        .btn { background-color: var(--accent-color); color: #000; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; width: 100%; }
+        .btn-danger { background-color: #ff4757; color: #fff; }
+        .btn-edit { background-color: #3498db; color: #fff; }
+        .product-admin-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px; gap: 10px; }
+        .product-admin-info { display: flex; align-items: center; gap: 10px; flex-grow: 1; overflow: hidden; }
+        .product-admin-info img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+        .actions-group { display: flex; gap: 5px; }
+        #custom-toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); padding: 12px 24px; border-radius: 30px; box-shadow: var(--shadow); z-index: 3000; font-size: 14px; transition: transform 0.3s ease; }
+        #custom-toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <header>
+        <div class="logo">ZEVO Admin</div>
+        <button class="back-store" onclick="window.location.href='index.html'"><i class="fa-solid fa-store"></i> المتجر</button>
+    </header>
+
+    <div class="container">
+        <!-- قسم تغيير كلمة المرور -->
+        <div class="card">
+            <h3>تغيير كلمة مرور لوحة التحكم</h3>
+            <div class="form-group">
+                <label>كلمة المرور الجديدة</label>
+                <input type="text" id="new-admin-pass" placeholder="أدخل كلمة المرور الجديدة...">
+            </div>
+            <button class="btn" style="background: #3498db; color: #fff;" onclick="changeAdminPassword()">تحديث كلمة المرور</button>
+        </div>
+
+        <div class="card">
+            <h3 id="form-title">إضافة تيشيرت جديد</h3>
+            <input type="hidden" id="p-edit-id" value="">
+            <div class="form-group"><label>اسم المنتج</label><input type="text" id="p-name" placeholder="مثال: تيشيرت اوفر سايز أسود"></div>
+            <div class="row">
+                <div class="form-group"><label>السعر (EGP)</label><input type="number" id="p-price" placeholder="250"></div>
+                <div class="form-group"><label>السعر القديم (اختياري)</label><input type="number" id="p-old-price" placeholder="350"></div>
+            </div>
+            <div class="row">
+                <div class="form-group"><label>الكمية المتاحة</label><input type="number" id="p-qty" placeholder="10"></div>
+                <div class="form-group"><label>المقاسات (مفصولة بفاصلة)</label><input type="text" id="p-sizes" value="S, M, L, XL, XXL"></div>
+            </div>
+            <div class="form-group"><label>الألوان (مفصولة بفاصلة)</label><input type="text" id="p-colors" value="أسود, أبيض, أزرق"></div>
+            
+            <div class="form-group">
+                <label>الصورة الرئيسية الجديدة (اختياري عند التعديل)</label>
+                <input type="file" id="p-img1-file" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label>الصورة الثانية الجديدة (اختياري)</label>
+                <input type="file" id="p-img2-file" accept="image/*">
+            </div>
+
+            <div class="row">
+                <div class="form-group"><label>هل يوجد عرض خصم؟</label><select id="p-is-offer" onchange="toggleOfferInput()"><option value="false">لا</option><option value="true">نعم</option></select></div>
+                <div class="form-group" id="discount-group" style="display:none;"><label>نسبة الخصم %</label><input type="number" id="p-discount" placeholder="20"></div>
+            </div>
+            <button class="btn" id="save-btn" onclick="saveProduct()">حفظ وإضافة المنتج</button>
+        </div>
+
+        <div class="card">
+            <h3>المنتجات الحالية</h3>
+            <div id="admin-products-list"></div>
+        </div>
+    </div>
+
+    <div id="custom-toast">تمت العملية بنجاح</div>
+
+    <script>
+        let products = JSON.parse(localStorage.getItem('zevo_products')) || [];
+
+        function showToast(msg) {
+            const toast = document.getElementById('custom-toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2500);
+        }
+
+        function changeAdminPassword() {
+            const newPass = document.getElementById('new-admin-pass').value.trim();
+            if(!newPass) {
+                showToast('يرجى إدخال كلمة المرور الجديدة!');
+                return;
+            }
+            localStorage.setItem('zevo_admin_pass', newPass);
+            document.getElementById('new-admin-pass').value = '';
+            showToast('تم تحديث كلمة المرور بنجاح!');
+        }
+
+        function toggleOfferInput() {
+            document.getElementById('discount-group').style.display = document.getElementById('p-is-offer').value === 'true' ? 'block' : 'none';
+        }
+
+        function compressImage(file, callback) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function (event) {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 500;
+                    const MAX_HEIGHT = 500;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    callback(canvas.toDataURL('image/jpeg', 0.7));
+                }
+            }
+        }
+
+        function saveProduct() {
+            const editId = document.getElementById('p-edit-id').value;
+            const name = document.getElementById('p-name').value.trim();
+            const price = document.getElementById('p-price').value;
+            const oldPrice = document.getElementById('p-old-price').value;
+            const qty = document.getElementById('p-qty').value;
+            const sizes = document.getElementById('p-sizes').value;
+            const colors = document.getElementById('p-colors').value;
+            const isOffer = document.getElementById('p-is-offer').value === 'true';
+            const discount = document.getElementById('p-discount').value;
+
+            const fileInput1 = document.getElementById('p-img1-file');
+            const fileInput2 = document.getElementById('p-img2-file');
+
+            if(!name || !price || !qty) {
+                showToast('يرجى ملء الحقول الأساسية!');
+                return;
+            }
+
+            let existingProduct = editId ? products.find(p => p.id == editId) : null;
+            let defaultImg = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500';
+
+            let img1 = existingProduct ? existingProduct.image1 : defaultImg;
+            let img2 = existingProduct ? existingProduct.image2 : '';
+
+            function proceedSaving() {
+                if (editId) {
+                    const index = products.findIndex(p => p.id == editId);
+                    if (index !== -1) {
+                        products[index] = {
+                            id: Number(editId),
+                            name, price, oldPrice,
+                            qty: parseInt(qty),
+                            sizes, colors,
+                            image1: img1,
+                            image2: img2,
+                            isOffer, discount
+                        };
+                        showToast('تم تعديل المنتج بنجاح!');
+                    }
+                } else {
+                    products.push({
+                        id: Date.now(),
+                        name, price, oldPrice,
+                        qty: parseInt(qty),
+                        sizes, colors,
+                        image1: img1,
+                        image2: img2,
+                        isOffer, discount
+                    });
+                    showToast('تم إضافة المنتج بنجاح!');
+                }
+
+                try {
+                    localStorage.setItem('zevo_products', JSON.stringify(products));
+                    clearForm();
+                    renderAdminProducts();
+                } catch (e) {
+                    showToast('خطأ: الذاكرة ممتلئة، حجم الصور كبير جداً.');
+                }
+            }
+
+            if (fileInput1.files && fileInput1.files[0]) {
+                compressImage(fileInput1.files[0], function(img1Base64) {
+                    img1 = img1Base64;
+                    if (fileInput2.files && fileInput2.files[0]) {
+                        compressImage(fileInput2.files[0], function(img2Base64) {
+                            img2 = img2Base64;
+                            proceedSaving();
+                        });
+                    } else {
+                        proceedSaving();
+                    }
+                });
+            } else {
+                if (fileInput2.files && fileInput2.files[0]) {
+                    compressImage(fileInput2.files[0], function(img2Base64) {
+                        img2 = img2Base64;
+                        proceedSaving();
+                    });
+                } else {
+                    proceedSaving();
+                }
+            }
+        }
+
+        function editProduct(id) {
+            const p = products.find(item => item.id == id);
+            if(!p) return;
+
+            document.getElementById('p-edit-id').value = p.id;
+            document.getElementById('p-name').value = p.name;
+            document.getElementById('p-price').value = p.price;
+            document.getElementById('p-old-price').value = p.oldPrice || '';
+            document.getElementById('p-qty').value = p.qty;
+            document.getElementById('p-sizes').value = p.sizes || '';
+            document.getElementById('p-colors').value = p.colors || '';
+            document.getElementById('p-is-offer').value = p.isOffer ? 'true' : 'false';
+            document.getElementById('p-discount').value = p.discount || '';
+            toggleOfferInput();
+
+            document.getElementById('form-title').innerText = 'تعديل المنتج';
+            document.getElementById('save-btn').innerText = 'حفظ التعديلات';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function clearForm() {
+            document.getElementById('p-edit-id').value = '';
+            ['p-name', 'p-price', 'p-old-price', 'p-qty', 'p-img1-file', 'p-img2-file', 'p-discount'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.value = '';
+            });
+            document.getElementById('p-is-offer').value = 'false';
+            document.getElementById('discount-group').style.display = 'none';
+            document.getElementById('form-title').innerText = 'إضافة تيشيرت جديد';
+            document.getElementById('save-btn').innerText = 'حفظ وإضافة المنتج';
+        }
+
+        function renderAdminProducts() {
+            const listContainer = document.getElementById('admin-products-list');
+            listContainer.innerHTML = '';
+            if(products.length === 0) {
+                listContainer.innerHTML = '<p style="text-align:center; color:#888; padding:10px;">لا توجد منتجات مضافة.</p>';
+                return;
+            }
+            products.forEach((product, index) => {
+                let defaultImg = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500';
+                listContainer.innerHTML += `
+                    <div class="product-admin-item">
+                        <div class="product-admin-info">
+                            <img src="${product.image1 || defaultImg}" alt="">
+                            <div>
+                                <div style="font-size:14px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${product.name}</div>
+                                <div style="font-size:12px; color:#888;">السعر: ${product.price} EGP | المتبقي: ${product.qty}</div>
+                            </div>
+                        </div>
+                        <div class="actions-group">
+                            <button class="btn btn-edit" style="width:auto; padding:6px 10px; font-size:12px;" onclick="editProduct(${product.id})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-danger" style="width:auto; padding:6px 10px; font-size:12px;" onclick="deleteProduct(${index})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function deleteProduct(index) {
+            products.splice(index, 1);
+            localStorage.setItem('zevo_products', JSON.stringify(products));
+            renderAdminProducts();
+            showToast('تم حذف المنتج بنجاح!');
+        }
+
+        renderAdminProducts();
+    </script>
+</body>
+</html>
